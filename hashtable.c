@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,10 @@ item DELETED_ITEM = {NULL, NULL};
 
 item* new_item(const char* key, const char* value) {
   item* i = malloc(sizeof(item));
+  if (i == NULL) {
+    fprintf(stderr, "fail to malloc");
+    exit(1);
+  }
   i->key = strdup(key);
   i->value = strdup(value);
   return i;
@@ -45,7 +50,10 @@ void del_table(table* t) {
 }
 
 void print_table(table* t) {
-  for (int i = 0; i < t->size; t++) {
+  printf("%d\n", t->count);
+  printf("%d\n", t->size);
+
+  for (int i = 0; i < t->size; i++) {
     item* it = t->items[i];
     if (it == NULL) {
       printf("key: NULL, value: NULL\n");
@@ -67,12 +75,9 @@ int naive_hash(const char* s, const int a, const int m) {
   return (int)hash;
 }
 
-int get_hash(const char* s,
-             const int num_buckets,
-             const int attempt,
-             int (*hash_func)(const char* s, const int a, const int m)) {
-  const int hash_a = hash_func(s, PRIME_1, num_buckets);
-  const int hash_b = hash_func(s, PRIME_2, num_buckets);
+int get_hash(const char* s, const int num_buckets, const int attempt) {
+  const int hash_a = naive_hash(s, PRIME_1, num_buckets);
+  const int hash_b = naive_hash(s, PRIME_2, num_buckets);
   return (hash_a + (attempt * (hash_b + 1))) % num_buckets;
 }
 
@@ -83,28 +88,29 @@ void table_insert(table* t, const char* key, const char* value) {
   }
 
   item* i = new_item(key, value);
-  int index = get_hash(i->key, t->size, 0, &naive_hash);
+
+  int index = get_hash(i->key, t->size, 0);
   item* cur_item = t->items[index];
   int j = 1;
-  while (cur_item != NULL) {
-    if (cur_item != &DELETED_ITEM) {
-      // update
-      if (strcmp(cur_item->key, key) == 0) {
-        del_item(cur_item);
-        t->items[index] = i;
-        return;
-      }
+  while (cur_item != NULL && cur_item != &DELETED_ITEM) {
+    // update
+    if (strcmp(cur_item->key, key) == 0) {
+      del_item(cur_item);
+      t->items[index] = i;
+      return;
     }
-    index = get_hash(i->key, t->size, j, &naive_hash);
+
+    index = get_hash(i->key, t->size, j);
     cur_item = t->items[index];
     j++;
   }
+
   t->items[index] = i;
   t->count++;
 }
 
 char* table_search(table* t, const char* key) {
-  int index = get_hash(key, t->size, 0, &naive_hash);
+  int index = get_hash(key, t->size, 0);
   item* cur_item = t->items[index];
   int j = 1;
   while (cur_item != NULL) {
@@ -114,7 +120,7 @@ char* table_search(table* t, const char* key) {
       }
     }
 
-    index = get_hash(key, t->size, j, &naive_hash);
+    index = get_hash(key, t->size, j);
     cur_item = t->items[index];
     j++;
   }
@@ -127,7 +133,7 @@ void table_delete(table* t, const char* key) {
     resize_down(t);
   }
 
-  int index = get_hash(key, t->size, 0, &naive_hash);
+  int index = get_hash(key, t->size, 0);
   item* cur_item = t->items[index];
   int j = 1;
   while (cur_item != NULL) {
@@ -137,7 +143,7 @@ void table_delete(table* t, const char* key) {
         t->items[index] = &DELETED_ITEM;
       }
     }
-    index = get_hash(key, t->size, j, &naive_hash);
+    index = get_hash(key, t->size, j);
     cur_item = t->items[index];
     j++;
   }

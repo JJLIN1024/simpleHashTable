@@ -1,5 +1,5 @@
 #pragma once
-#define BASE_SIZE 100
+#define BASE_SIZE 10
 #define PRIME_1 19
 #define PRIME_2 53
 typedef struct {
@@ -22,10 +22,7 @@ void del_table(table*);
 void print_table(table*);
 
 int naive_hash(const char*, const int, const int);
-int get_hash(const char*,
-             const int,
-             const int,
-             int (*)(const char*, const int, const int));
+int get_hash(const char*, const int, const int);
 
 void table_insert(table*, const char*, const char*);
 char* table_search(table*, const char*);

@@ -12,6 +12,9 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $^ $(CFLAGS) -o $@
 
+debug: $(SRC)
+	$(CC) $^ $(CFLAGS) -g -o $@
+
 main.o: hashtable.h 
 
 hashtable.o: hashtable.h prime.h
@@ -25,4 +28,4 @@ valgrind: $(TARGET)
 	valgrind ./$(TARGET)
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o $(TARGET) debug
