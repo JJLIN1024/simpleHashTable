@@ -42,7 +42,7 @@ void del_item(item* i) {
 void del_table(table* t) {
   for (int i = 0; i < t->size; i++) {
     item* it = t->items[i];
-    if (it != NULL)
+    if (it != NULL && it != &DELETED_ITEM)
       del_item(it);
   }
   free(t->items);
@@ -50,19 +50,22 @@ void del_table(table* t) {
 }
 
 void print_table(table* t) {
-  printf("%d\n", t->count);
-  printf("%d\n", t->size);
-
+  printf("--------------------------------\n");
+  printf("Table Load: %d / %d                     \n", t->count, t->size);
+  printf("--------------------------------\n");
+  printf("%7s %5s %7s\n", "key", "", "value");
+  printf("--------------------------------\n");
   for (int i = 0; i < t->size; i++) {
     item* it = t->items[i];
     if (it == NULL) {
-      printf("key: NULL, value: NULL\n");
+      printf("%d %5s %5s %5s\n", i + 1, "", "", "");
     } else if (it == &DELETED_ITEM) {
-      printf("key: TOMB, value: NULL\n");
+      printf("%d %5s %5s %5s\n", i + 1, "DELETED", "", "DELETED");
     } else {
-      printf("key: %s, value: %s\n", it->key, it->value);
+      printf("%d %5s %5s %5s\n", i + 1, it->key, "", it->value);
     }
   }
+  printf("--------------------------------\n");
 }
 
 int naive_hash(const char* s, const int a, const int m) {
@@ -129,20 +132,19 @@ char* table_search(table* t, const char* key) {
 
 void table_delete(table* t, const char* key) {
   const int load = t->count * 100 / t->size;
-  if (load < 10) {
+  if (load < 20) {
     resize_down(t);
   }
 
   int index = get_hash(key, t->size, 0);
   item* cur_item = t->items[index];
   int j = 1;
-  while (cur_item != NULL) {
-    if (cur_item != &DELETED_ITEM) {
-      if (strcmp(cur_item->key, key) == 0) {
-        del_item(cur_item);
-        t->items[index] = &DELETED_ITEM;
-      }
+  while (cur_item != NULL && cur_item != &DELETED_ITEM) {
+    if (strcmp(cur_item->key, key) == 0) {
+      del_item(cur_item);
+      t->items[index] = &DELETED_ITEM;
     }
+
     index = get_hash(key, t->size, j);
     cur_item = t->items[index];
     j++;
@@ -153,6 +155,7 @@ void table_delete(table* t, const char* key) {
 void table_resize(table* t, const int base_size) {
   if (base_size < BASE_SIZE)
     return;
+
   table* new_table = table_new_size(base_size);
   for (int i = 0; i < t->size; i++) {
     item* it = t->items[i];
@@ -162,9 +165,18 @@ void table_resize(table* t, const int base_size) {
   }
 
   t->base_size = new_table->base_size;
-  t->size = new_table->size;
   t->count = new_table->count;
+
+  // since we insert old items into new_table,
+  // we have to swap size and items so as
+  // to successfully call del_table(new_table)
+  const int tmp_size = t->size;
+  t->size = new_table->size;
+  new_table->size = tmp_size;
+
+  item** tmp_items = t->items;
   t->items = new_table->items;
+  new_table->items = tmp_items;
 
   del_table(new_table);
 }
