@@ -15,8 +15,18 @@ item* new_item(const char* key, const char* value) {
     fprintf(stderr, "fail to malloc");
     exit(1);
   }
-  i->key = strdup(key);
-  i->value = strdup(value);
+  // Do not use strdup(), will cause
+  // the program to crash
+  int k_len = strlen(key);
+  int v_len = strlen(value);
+  char* k = malloc(k_len + 1);
+  char* v = malloc(v_len + 1);
+  strcpy(k, key);
+  strcpy(v, value);
+  k[k_len] = '\0';
+  v[v_len] = '\0';
+  i->key = k;
+  i->value = v;
   return i;
 }
 
