@@ -1,8 +1,8 @@
 # simpleHashTable
 ## Support OS
 
-- x86-based Ubuntu
-- MacOS
+- Ubuntu-latest
+- MacOS-latest
 
 ## Basic Usage
 
@@ -25,3 +25,9 @@ A series of hash operation written in `main.c` will be performed, and the result
     - make sure [cppcheck](https://cppcheck.sourceforge.io/) is installed on your system
     - `make check` 
 
+
+## TODOs
+
+- [] add test
+- [] support for hashing with different hash functions
+- [] better error report
