@@ -1,4 +1,6 @@
 # simpleHashTable
+
+A simple hash table using open addressing.
 ## Support OS
 
 - Ubuntu-latest
@@ -28,6 +30,10 @@ A series of hash operation written in `main.c` will be performed, and the result
 
 ## TODOs
 
-- [] add test
-- [] support for hashing with different hash functions
-- [] better error report
+- [ ] add test
+- [ ] support for hashing with different hash functions
+- [ ] better error report
+
+## Reference
+
+Inspired by [jamesroutley's tutorial on how to write a hash table](https://github.com/jamesroutley/write-a-hash-table).
